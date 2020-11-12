@@ -1,0 +1,60 @@
+version: "3"
+services:
+  cakecasts:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD: 'local'
+    image: cakecasts:1.1
+    ports:
+      - 8080:80
+    volumes:
+      - .:/var/www/html
+    links:
+      - mysql
+    depends_on:
+      - mysql
+    environment:
+      DEBUG: 'true'
+      SECURITY_SALT: 49e558df8e733a6daedbe054a9ccd7add9d9a6efa8a96cf3248815c364b47391
+      DATABASE_URL: mysql://devuser:devpass@121.212.1.2/cakecasts
+    networks:
+      cakecasts_net:
+        ipv4_address: 121.212.1.1
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: cakecasts
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpass
+    ports:
+      - 9906:3306
+    networks:
+      cakecasts_net:
+        ipv4_address: 121.212.1.2
+
+#  pgsql:
+#    image: postgres:latest
+#    ports:
+#      - 5432:54320
+#    volumes:
+#      - pgsql_data:/var/lib/postgres
+#    container_name: cakecasts-pgsql
+#    environment:
+#      POSTGRES_PASSWORD: pgsqldocker
+#      POSTGRES_DB: cakecasts
+#    networks:
+#      cakecasts_net:
+#        ipv4_address: 121.212.1.3
+
+volumes:
+  db_data: {}
+networks:
+  cakecasts_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 121.212.0.0/16
